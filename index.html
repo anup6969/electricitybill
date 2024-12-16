@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electricity Bill Calculator - A(DMR)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        h2 {
+            text-align: center;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Electricity Bill Calculator</h2>
+        <label for="lastReading">Last Meter Reading (kWh):</label>
+        <input type="number" id="lastReading" placeholder="Enter last meter reading" required>
+        
+        <label for="currentReading">Current Meter Reading (kWh):</label>
+        <input type="number" id="currentReading" placeholder="Enter current meter reading" required>
+        
+        <button onclick="calculateBill()">Calculate Bill</button>
+        
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        function calculateBill() {
+            // Get user inputs
+            const lastReading = parseFloat(document.getElementById("lastReading").value);
+            const currentReading = parseFloat(document.getElementById("currentReading").value);
+
+            // Validate inputs
+            if (isNaN(lastReading) || isNaN(currentReading) || lastReading >= currentReading) {
+                document.getElementById("result").innerText = "Please enter valid readings.";
+                return;
+            }
+
+            // Calculate units consumed
+            const unitsConsumed = currentReading - lastReading;
+
+            // Tariff plan for A(DMR)
+            const slabRates = [
+                { limit: 102, rate: 4.10 },  // First 102 units @ ₹4.10/unit
+                { limit: 78, rate: 5.34 },  // Next 78 units @ ₹5.34/unit
+                { limit: 100, rate: 4.35 }, // Next 100 units @ ₹4.35/unit
+                { limit: 200, rate: 4.67 }, // Next 200 units @ ₹4.67/unit
+                { limit: Infinity, rate: 4.99 } // Above 450 units @ ₹4.99/unit
+            ];
+            const fixedCharge = 30.0;
+
+            // Calculate energy charges
+            let remainingUnits = unitsConsumed;
+            let energyCharge = 0.0;
+
+            for (const slab of slabRates) {
+                if (remainingUnits <= 0) break;
+                const applicableUnits = Math.min(remainingUnits, slab.limit);
+                energyCharge += applicableUnits * slab.rate;
+                remainingUnits -= applicableUnits;
+            }
+
+            // Total bill
+            const totalBill = fixedCharge + energyCharge;
+
+            // Display result
+            document.getElementById("result").innerText = `Total Bill for ${unitsConsumed} units: ₹${totalBill.toFixed(2)}`;
+        }
+    </script>
+</body>
+</html>
